@@ -16,6 +16,7 @@ from collections import Counter
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import SGDClassifier
 from sklearn.cross_validation import train_test_split
+from sklearn.pipeline import Pipeline
 import pickle
 
 # Import Dataset
@@ -41,29 +42,30 @@ for i in range(0, len(X)):
     print(i)
 
 # Vectorize each comment by freq. 'customer' 'customer service'
-tfidf_vect = TfidfVectorizer(ngram_range=(1,2), max_features=5000)
-X_tfidf = tfidf_vect.fit_transform(raw_documents=X).toarray()
+# Create classifier
+text_clf = Pipeline([
+            ('vect', TfidfVectorizer(ngram_range=(1,2), max_features=5000)),
+            ('clf', SGDClassifier())
+        ])
 
-# Split test and train datasets
-X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, test_size=0.2)
+# Split test and train datasets   
+X_train, X_test, y_train, y_test = train_test_split(corpus, y, test_size=0.2)
 
-# Create and train classifier
-# Create and train classifier
-clf = SGDClassifier()
-clf.fit(X_train, y_train)
+# Train classifier
+text_clf.fit(X_train, y_train)
 
 # Predict 
-y_pred = clf.predict(X_test)
+y_pred = text_clf.predict(X_test)
 
 # Calculate accuracy
 accuracy = np.mean(y_pred == y_test)
 
 def dump_model():
-    filename = 'finalized_model.sav'
-    pickle.dump(clf, open(filename, 'wb'))
+    filename = 'model.sav'
+    pickle.dump(text_clf, open(filename, 'wb'))
 
 def predict(comment):
-    return clf.predict(tfidf_vect.transform(raw_documents=[process_comment(comment)]).toarray())
+    return text_clf.predict([process_comment(comment)])
 
 def word_prob(word): return dictionary[word] / total
 
