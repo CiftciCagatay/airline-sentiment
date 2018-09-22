@@ -145,7 +145,7 @@ for i in range(0, len(X)):
 
 # Vectorize each comment by freq. 'customer' 'customer service'
 tfidf_vect = TfidfVectorizer(ngram_range=(1,2), max_features=5000)
-X_tfidf = tfidf_vect.fit_transform(raw_documents=X).toarray()
+X_tfidf = tfidf_vect.fit_transform(raw_documents=corpus).toarray()
 
 # Split test and train datasets
 X_train, X_test, y_train, y_test = train_test_split(X_tfidf, y, test_size=0.2)
@@ -156,7 +156,7 @@ model = SGDClassifier()
 model.fit(X_train, y_train)
 
 # Predict 
-y_pred = clf.predict(X_test)
+y_pred = model.predict(X_test)
 
 # Calculate accuracy
 accuracy = np.mean(y_pred == y_test)
@@ -164,6 +164,10 @@ accuracy = np.mean(y_pred == y_test)
 def dump_model():
     filename = 'finalized_model.sav'
     pickle.dump(model, open(filename, 'wb'))
+    
+def load_model():
+    filename = 'finalized_model.sav'
+    pickle.load(open(filename, 'rb'))
 
 def predict(comment):
     return model.predict(tfidf_vect.transform(raw_documents=[process_comment(comment)]).toarray())
